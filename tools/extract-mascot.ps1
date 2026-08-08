@@ -24,8 +24,8 @@ param(
   [int]$CropWidth = 0,
   [int]$CropHeight = 0,
   [int]$MaxWidth = 420,
-  [double]$ColorThreshold = 26,
-  [double]$EdgeFloor = 6,
+  [double]$ColorThreshold = 38,
+  [int]$Feather = 1,
   [int]$Padding = 8
 )
 
@@ -136,24 +136,38 @@ while ($head -lt $tail) {
   }
 }
 
-# Border-connected pixels fade out with colourfulness; everything else stays solid.
+# Border-connected pixels are cut hard, then the mask is feathered so edges are not jagged.
 $alpha = [byte[]]::new($pixelCount)
-$range = [Math]::Max(1.0, $ColorThreshold - $EdgeFloor)
+for ($index = 0; $index -lt $pixelCount; $index++) {
+  if (-not $isBackground[$index]) { $alpha[$index] = 255 }
+}
+
+if ($Feather -gt 0) {
+  $feathered = [byte[]]::new($pixelCount)
+  for ($y = 0; $y -lt $height; $y++) {
+    for ($x = 0; $x -lt $width; $x++) {
+      $sum = 0
+      $count = 0
+      for ($dy = -$Feather; $dy -le $Feather; $dy++) {
+        $ny = $y + $dy
+        if ($ny -lt 0 -or $ny -ge $height) { continue }
+        for ($dx = -$Feather; $dx -le $Feather; $dx++) {
+          $nx = $x + $dx
+          if ($nx -lt 0 -or $nx -ge $width) { continue }
+          $sum += $alpha[$ny * $width + $nx]
+          $count++
+        }
+      }
+      $feathered[$y * $width + $x] = [byte][Math]::Round($sum / [Math]::Max(1, $count))
+    }
+  }
+  $alpha = $feathered
+}
+
 for ($y = 0; $y -lt $height; $y++) {
   $rowOffset = $y * $stride
   for ($x = 0; $x -lt $width; $x++) {
-    $index = $y * $width + $x
-    $offset = $rowOffset + $x * 4
-
-    if (-not $isBackground[$index]) {
-      $alpha[$index] = 255
-      $buffer[$offset + 3] = 255
-      continue
-    }
-
-    $a = [Math]::Min(1.0, [Math]::Max(0.0, ($colorfulness[$index] - $EdgeFloor) / $range))
-    $alpha[$index] = [byte][Math]::Round($a * 255)
-    $buffer[$offset + 3] = $alpha[$index]
+    $buffer[$rowOffset + $x * 4 + 3] = $alpha[$y * $width + $x]
   }
 }
 
