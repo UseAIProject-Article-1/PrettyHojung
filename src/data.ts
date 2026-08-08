@@ -1,4 +1,36 @@
-import type { Persona, PersonaId, Scenario } from './types'
+import type {
+  Persona,
+  PersonaId,
+  PersonalityStyle,
+  Scenario,
+} from './types'
+
+export const personalityStyles: PersonalityStyle[] = [
+  {
+    id: 'kind',
+    label: '다정한',
+    emoji: '💗',
+    description: '내 마음을 잘 들어주고 따뜻하게 대답해요.',
+  },
+  {
+    id: 'calm',
+    label: '차분한',
+    emoji: '🌙',
+    description: '서두르지 않고 천천히 생각하며 말해요.',
+  },
+  {
+    id: 'active',
+    label: '활발한',
+    emoji: '⚡',
+    description: '반응이 크고 먼저 질문하며 대화를 이끌어요.',
+  },
+  {
+    id: 'direct',
+    label: '솔직한',
+    emoji: '🎯',
+    description: '생각을 돌려 말하지 않고 분명하게 표현해요.',
+  },
+]
 
 export const personas: Persona[] = [
   {

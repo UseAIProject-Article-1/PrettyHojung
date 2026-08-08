@@ -1,9 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { ChatMessage, Persona, Scenario } from '../types'
+import bunnyThinking from '../assets/nunchi/bunny-thinking.png'
+import type {
+  ChatMessage,
+  Persona,
+  PersonalityStyle,
+  Scenario,
+} from '../types'
 
 interface ChatScreenProps {
   persona: Persona
+  personality: PersonalityStyle
   scenario: Scenario
   messages: ChatMessage[]
   userTurnCount: number
@@ -15,6 +22,7 @@ interface ChatScreenProps {
 
 export function ChatScreen({
   persona,
+  personality,
   scenario,
   messages,
   userTurnCount,
@@ -54,7 +62,7 @@ export function ChatScreen({
           </span>
           <div>
             <strong>{persona.name}</strong>
-            <small>{scenario.title}</small>
+            <small>{personality.emoji} {personality.label} · {scenario.title}</small>
           </div>
         </div>
         <div className="turn-progress" aria-label={`${userTurnCount}/${maxTurns}회 답변`}>
@@ -80,6 +88,7 @@ export function ChatScreen({
       <div className="chat-scene">
         <span aria-hidden="true">{scenario.emoji}</span>
         <p>{scenario.title}</p>
+        <img src={bunnyThinking} alt="" />
       </div>
 
       <div className="messages" aria-live="polite" ref={messageListRef}>

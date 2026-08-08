@@ -1,12 +1,17 @@
-import type { Persona, Scenario } from '../types'
+import bunnyHeart from '../assets/nunchi/bunny-heart.png'
+import bunnyLaptop from '../assets/nunchi/bunny-laptop.png'
+import type { Persona, PersonalityStyle, Scenario } from '../types'
 
 interface SetupScreenProps {
   personas: Persona[]
   persona: Persona
+  personalityStyles: PersonalityStyle[]
+  personality: PersonalityStyle
   scenarios: Scenario[]
   selectedScenario: Scenario | null
   isLoading: boolean
   onPersonaSelect: (persona: Persona) => void
+  onPersonalitySelect: (personality: PersonalityStyle) => void
   onScenarioSelect: (scenario: Scenario) => void
   onStart: () => void
 }
@@ -14,10 +19,13 @@ interface SetupScreenProps {
 export function SetupScreen({
   personas,
   persona,
+  personalityStyles,
+  personality,
   scenarios,
   selectedScenario,
   isLoading,
   onPersonaSelect,
+  onPersonalitySelect,
   onScenarioSelect,
   onStart,
 }: SetupScreenProps) {
@@ -72,7 +80,33 @@ export function SetupScreen({
               <span aria-hidden="true">💬</span>
               {persona.tone}
             </div>
+            <div className="personality-picker">
+              <span>어떤 성향으로 대화할까요?</span>
+              <div>
+                {personalityStyles.map((style) => (
+                  <button
+                    type="button"
+                    key={style.id}
+                    className={
+                      personality.id === style.id
+                        ? 'personality-button active'
+                        : 'personality-button'
+                    }
+                    onClick={() => onPersonalitySelect(style)}
+                    aria-pressed={personality.id === style.id}
+                  >
+                    <span aria-hidden="true">{style.emoji}</span>
+                    {style.label}
+                  </button>
+                ))}
+              </div>
+              <p>
+                <strong>{personality.emoji} {personality.label}</strong>
+                {personality.description}
+              </p>
+            </div>
           </div>
+          <img className="profile-bunny" src={bunnyHeart} alt="" />
           <div className="profile-decoration" aria-hidden="true">
             <span>✦</span>
             <span>●</span>
@@ -98,7 +132,10 @@ export function SetupScreen({
             <span />
             <span />
             <span />
-            <p>상황을 만들고 있어요</p>
+            <p>
+              <img src={bunnyLaptop} alt="" />
+              상황을 만들고 있어요
+            </p>
           </div>
         ) : (
           <div className="scenario-grid">
@@ -135,7 +172,7 @@ export function SetupScreen({
               <span aria-hidden="true">{selectedScenario.emoji}</span>
               <p>
                 <small>{persona.name}와</small>
-                <strong>{selectedScenario.title}</strong>
+                <strong>{personality.label} 성향 · {selectedScenario.title}</strong>
               </p>
             </>
           ) : (

@@ -3,12 +3,14 @@ import './App.css'
 import { ChatScreen } from './components/ChatScreen'
 import { FeedbackScreen } from './components/FeedbackScreen'
 import { SetupScreen } from './components/SetupScreen'
-import { personas } from './data'
+import bunnyGuide from './assets/nunchi/bunny-guide.png'
+import { personas, personalityStyles } from './data'
 import { conversationEngine } from './services/conversationEngine'
 import type {
   ChatMessage,
   Feedback,
   Persona,
+  PersonalityStyle,
   Scenario,
   ViewMode,
 } from './types'
@@ -18,6 +20,9 @@ const MAX_USER_TURNS = 5
 function App() {
   const [view, setView] = useState<ViewMode>('setup')
   const [persona, setPersona] = useState<Persona>(personas[0])
+  const [personality, setPersonality] = useState<PersonalityStyle>(
+    personalityStyles[0],
+  )
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -66,6 +71,7 @@ function App() {
     setIsThinking(true)
     const result = await conversationEngine.evaluate(
       persona,
+      personality,
       selectedScenario,
       finalMessages,
     )
@@ -97,6 +103,7 @@ function App() {
 
     const reply = await conversationEngine.reply({
       persona,
+      personality,
       scenario: selectedScenario,
       messages: messagesWithUser,
       userMessage: userMessage.text,
@@ -115,6 +122,7 @@ function App() {
     if (turn === MAX_USER_TURNS) {
       const result = await conversationEngine.evaluate(
         persona,
+        personality,
         selectedScenario,
         completedMessages,
       )
@@ -138,7 +146,9 @@ function App() {
     <div className="app">
       <header className="app-header">
         <button className="logo" type="button" onClick={reset}>
-          <span aria-hidden="true">눈</span>
+          <span aria-hidden="true">
+            <img src={bunnyGuide} alt="" />
+          </span>
           <strong>눈치코치</strong>
         </button>
         <div className="steps" aria-label="진행 단계">
@@ -155,10 +165,13 @@ function App() {
           <SetupScreen
             personas={personas}
             persona={persona}
+            personalityStyles={personalityStyles}
+            personality={personality}
             scenarios={scenarios}
             selectedScenario={selectedScenario}
             isLoading={isLoadingScenarios}
             onPersonaSelect={selectPersona}
+            onPersonalitySelect={setPersonality}
             onScenarioSelect={setSelectedScenario}
             onStart={startConversation}
           />
@@ -166,6 +179,7 @@ function App() {
         {view === 'chat' && selectedScenario && (
           <ChatScreen
             persona={persona}
+            personality={personality}
             scenario={selectedScenario}
             messages={messages}
             userTurnCount={userTurnCount}
@@ -178,6 +192,7 @@ function App() {
         {view === 'feedback' && selectedScenario && feedback && (
           <FeedbackScreen
             persona={persona}
+            personality={personality}
             scenario={selectedScenario}
             feedback={feedback}
             onRestart={reset}

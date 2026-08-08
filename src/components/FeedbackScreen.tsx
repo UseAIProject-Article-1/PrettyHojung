@@ -1,7 +1,14 @@
-import type { Feedback, Persona, Scenario } from '../types'
+import bunnyReading from '../assets/nunchi/bunny-reading.png'
+import type {
+  Feedback,
+  Persona,
+  PersonalityStyle,
+  Scenario,
+} from '../types'
 
 interface FeedbackScreenProps {
   persona: Persona
+  personality: PersonalityStyle
   scenario: Scenario
   feedback: Feedback
   onRestart: () => void
@@ -9,6 +16,7 @@ interface FeedbackScreenProps {
 
 export function FeedbackScreen({
   persona,
+  personality,
   scenario,
   feedback,
   onRestart,
@@ -16,6 +24,7 @@ export function FeedbackScreen({
   return (
     <div className="feedback-page page">
       <header className="feedback-heading">
+        <img className="feedback-mascot" src={bunnyReading} alt="" />
         <div className="celebration" aria-hidden="true">
           <span>✦</span>
           <span>●</span>
@@ -24,7 +33,7 @@ export function FeedbackScreen({
         </div>
         <span className="complete-chip">대화 완료!</span>
         <h1>내 마음을 잘 말했어요</h1>
-        <p>{persona.name}와의 연습 결과</p>
+        <p>{persona.name} · {personality.emoji} {personality.label} 성향</p>
       </header>
 
       <section className="score-card" aria-label={`대화 점수 ${feedback.score}%`}>

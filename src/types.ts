@@ -1,6 +1,7 @@
 export type ViewMode = 'setup' | 'chat' | 'feedback'
 
 export type PersonaId = 'parent' | 'teacher' | 'close-friend' | 'new-friend' | 'sibling'
+export type PersonalityId = 'kind' | 'calm' | 'active' | 'direct'
 
 export interface Persona {
   id: PersonaId
@@ -12,6 +13,13 @@ export interface Persona {
   personality: string
   tone: string
   color: string
+}
+
+export interface PersonalityStyle {
+  id: PersonalityId
+  label: string
+  emoji: string
+  description: string
 }
 
 export interface Scenario {
@@ -39,6 +47,7 @@ export interface Feedback {
 
 export interface ReplyContext {
   persona: Persona
+  personality: PersonalityStyle
   scenario: Scenario
   messages: ChatMessage[]
   userMessage: string
@@ -50,6 +59,7 @@ export interface ConversationEngine {
   reply: (context: ReplyContext) => Promise<string>
   evaluate: (
     persona: Persona,
+    personality: PersonalityStyle,
     scenario: Scenario,
     messages: ChatMessage[],
   ) => Promise<Feedback>
