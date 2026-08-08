@@ -1,9 +1,4 @@
-import type {
-  Persona,
-  PersonaId,
-  PersonalityStyle,
-  Scenario,
-} from './types'
+import type { Persona, PersonalityStyle } from './types'
 
 export const personalityStyles: PersonalityStyle[] = [
   {
@@ -89,64 +84,3 @@ export const personas: Persona[] = [
     color: '#c6b2ed',
   },
 ]
-
-const makeScenario = (
-  personaId: PersonaId,
-  id: string,
-  emoji: string,
-  title: string,
-  hint: string,
-  openingLine: string,
-  samplePhrase: string,
-): Scenario => ({
-  id,
-  personaId,
-  emoji,
-  title,
-  hint,
-  openingLine,
-  samplePhrase,
-})
-
-export const scenarioPools: Record<PersonaId, Scenario[]> = {
-  parent: [
-    makeScenario('parent', 'late-home', '⏰', '귀가 시간이 늦어졌어요', '먼저 상황을 설명해요', '민지야, 약속한 시간보다 늦었네. 무슨 일이 있었어?', '걱정하게 해서 미안해. 버스를 놓쳐서 늦었어.'),
-    makeScenario('parent', 'want-game', '🎮', '게임 시간을 늘리고 싶어요', '이유와 약속을 함께 말해요', '게임을 더 하고 싶다고? 왜 그런지 이야기해 줄래?', '숙제를 끝냈어. 오늘만 20분 더 해도 될까?'),
-    makeScenario('parent', 'bad-score', '📄', '시험 점수가 속상해요', '감정을 솔직히 알려요', '표정이 안 좋아 보이네. 오늘 학교에서 무슨 일 있었니?', '시험을 못 봐서 속상해. 다음 공부 계획을 같이 세워 줘.'),
-    makeScenario('parent', 'sleepover', '🏠', '친구 집에서 자고 싶어요', '필요한 정보를 알려요', '친구 집에서 자고 싶구나. 누구 집이고 부모님은 계시니?', '유나네 집이고 부모님도 계셔. 토요일에 가도 될까?'),
-    makeScenario('parent', 'lost-item', '🎒', '준비물을 잃어버렸어요', '숨기지 않고 도움을 청해요', '가방을 계속 찾고 있네. 잃어버린 게 있니?', '준비물을 잃어버렸어. 같이 찾아봐 줄래?'),
-    makeScenario('parent', 'need-alone', '🌙', '혼자 쉬고 싶어요', '필요한 시간을 구체적으로 말해요', '같이 간식 먹을까? 오늘은 어땠어?', '지금은 10분만 혼자 쉬고 나서 이야기하고 싶어.'),
-  ],
-  teacher: [
-    makeScenario('teacher', 'hard-question', '🙋', '수업 내용을 모르겠어요', '모르는 부분을 가리켜요', '손 들었구나. 어떤 부분이 궁금하니?', '선생님, 이 문제의 두 번째 줄이 이해되지 않아요.'),
-    makeScenario('teacher', 'forgot-homework', '📚', '숙제를 두고 왔어요', '사실과 해결 방법을 말해요', '민지야, 숙제 공책은 어디 있니?', '집에 두고 왔어요. 내일 꼭 가져와도 될까요?'),
-    makeScenario('teacher', 'friend-conflict', '💬', '친구 문제로 도움이 필요해요', '있었던 일을 차례대로 말해요', '선생님께 할 말이 있니? 천천히 말해도 괜찮아.', '친구와 다퉜는데 둘이 해결하기 어려워서 도움받고 싶어요.'),
-    makeScenario('teacher', 'bathroom', '🚻', '수업 중 화장실에 가고 싶어요', '짧고 분명하게 부탁해요', '민지야, 무슨 일이니?', '선생님, 급해서 그런데 화장실에 다녀와도 될까요?'),
-    makeScenario('teacher', 'presentation-fear', '🎤', '발표가 너무 떨려요', '어떤 도움이 필요한지 말해요', '발표 준비는 잘 되어 가니?', '발표가 너무 떨려요. 연습을 한 번 봐주실 수 있나요?'),
-    makeScenario('teacher', 'seat-change', '🪑', '자리를 바꾸고 싶어요', '불편한 이유를 차분히 말해요', '자리 때문에 이야기하고 싶은 게 있니?', '칠판이 잘 안 보여요. 앞자리로 바꿀 수 있을까요?'),
-  ],
-  'close-friend': [
-    makeScenario('close-friend', 'hurt-joke', '😟', '친구의 장난에 속상했어요', '내 기분을 먼저 말해요', '아까 내가 한 장난 재미있었지?', '나는 그 말이 조금 속상했어. 다음에는 하지 말아 줘.'),
-    makeScenario('close-friend', 'different-game', '⚽', '다른 놀이를 하고 싶어요', '친구 생각도 인정해요', '오늘도 축구하자! 바로 운동장 가자.', '축구도 좋지만 오늘은 술래잡기를 해 보면 어때?'),
-    makeScenario('close-friend', 'cancel-plan', '📅', '약속을 바꿔야 해요', '빨리 알리고 미안함을 전해요', '우리 오늘 학교 끝나고 놀기로 한 거 기억하지?', '미안해. 오늘 가족 일이 생겨서 내일 놀 수 있을까?'),
-    makeScenario('close-friend', 'borrow-pencil', '✏️', '내 물건을 말없이 썼어요', '바라는 행동을 알려요', '이 색연필? 잠깐 쓰고 돌려놓으려고 했어.', '다음부터는 쓰기 전에 먼저 물어봐 줘.'),
-    makeScenario('close-friend', 'secret', '🤫', '비밀을 지켜 달라고 말해요', '중요한 이유를 짧게 말해요', '아까 네가 말한 이야기, 다른 친구한테 말해도 돼?', '아직은 비밀로 해 줬으면 좋겠어.'),
-    makeScenario('close-friend', 'apologize', '🙏', '내가 실수해서 사과해요', '무엇을 잘못했는지 말해요', '아까 내 공책에 낙서한 거 너야?', '응, 내가 장난으로 했어. 속상하게 해서 정말 미안해.'),
-  ],
-  'new-friend': [
-    makeScenario('new-friend', 'say-hello', '👋', '먼저 인사하고 싶어요', '이름부터 알려 줘요', '안녕. 너도 오늘 처음 온 거야?', '안녕! 나는 민지야. 만나서 반가워.'),
-    makeScenario('new-friend', 'play-together', '🛝', '같이 놀고 싶어요', '할 놀이를 제안해요', '쉬는 시간인데 뭐 하지?', '나랑 운동장에서 같이 놀래?'),
-    makeScenario('new-friend', 'lunch-seat', '🍱', '점심을 같이 먹고 싶어요', '부담 없이 물어봐요', '급식 먹으러 가려고 하는데 어디에 앉지?', '괜찮으면 나랑 같이 앉을래?'),
-    makeScenario('new-friend', 'ask-hobby', '🎨', '좋아하는 것을 묻고 싶어요', '쉬운 질문 하나를 골라요', '나는 쉬는 시간에 그림을 그리고 있어.', '그림 그리는 걸 좋아해? 어떤 그림을 그려?'),
-    makeScenario('new-friend', 'help-school', '🗺️', '학교를 안내해 주고 싶어요', '도움이 필요한지 먼저 물어요', '과학실이 어디인지 잘 모르겠어.', '내가 같이 가 줄까? 이쪽이야.'),
-    makeScenario('new-friend', 'join-group', '🧩', '모둠에 함께하자고 말해요', '따뜻하게 자리를 내어 줘요', '아직 어느 모둠에 가야 할지 모르겠어.', '우리 모둠에 자리 있어. 같이 할래?'),
-  ],
-  sibling: [
-    makeScenario('sibling', 'shared-remote', '📺', '리모컨을 번갈아 써요', '순서를 제안해요', '내가 먼저 보고 있었으니까 계속 볼래.', '이 프로그램 끝나면 내가 보고 싶은 걸 봐도 될까?'),
-    makeScenario('sibling', 'borrow-clothes', '👕', '내 옷을 허락 없이 입었어요', '화 대신 바라는 점을 말해요', '이 옷 잠깐 입었는데, 왜?', '내 옷을 입기 전에는 먼저 물어봐 줘.'),
-    makeScenario('sibling', 'quiet-study', '📖', '조용히 해 달라고 부탁해요', '이유와 시간을 알려요', '왜? 음악이 너무 커?', '숙제하는 20분 동안만 소리를 줄여 줄래?'),
-    makeScenario('sibling', 'share-snack', '🍪', '간식을 나누고 싶어요', '공평한 방법을 제안해요', '과자가 하나 남았네. 내가 먹어도 돼?', '반으로 나눠 먹으면 어떨까?'),
-    makeScenario('sibling', 'need-help', '🧱', '어려운 만들기를 도와 달라고 해요', '어디가 어려운지 말해요', '그거 아직도 만들고 있어?', '여기 붙이는 게 어려워. 잠깐 도와줄 수 있어?'),
-    makeScenario('sibling', 'privacy', '🚪', '방에 들어올 때 노크해 달라고 해요', '내가 불편한 이유를 말해요', '문이 열려 있길래 그냥 들어왔어.', '갑자기 들어오면 놀라. 다음에는 노크해 줘.'),
-  ],
-}

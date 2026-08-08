@@ -1,5 +1,4 @@
-import bunnyHeart from '../assets/nunchi/bunny-heart.png'
-import bunnyLaptop from '../assets/nunchi/bunny-laptop.png'
+import bunnyDoodle from '../assets/nunchi/bunny-doodle.svg'
 import type { Persona, PersonalityStyle, Scenario } from '../types'
 
 interface SetupScreenProps {
@@ -31,12 +30,21 @@ export function SetupScreen({
 }: SetupScreenProps) {
   return (
     <div className="setup-page page">
+      <div className="setup-intro">
+        <div>
+          <span>오늘의 예절 상담</span>
+          <h1>마음속 이야기를<br />천천히 들려주세요</h1>
+          <p>정답은 없어요. 토끼 코치가 공감하며 함께 방법을 찾아볼게요.</p>
+        </div>
+        <img src={bunnyDoodle} alt="꽃을 든 눈치코치 토끼" />
+      </div>
+
       <section aria-labelledby="person-heading">
         <div className="title-row">
           <span className="section-number">1</span>
           <div>
-            <h1 id="person-heading">누구와 대화할까요?</h1>
-            <p>한 명을 골라 주세요</p>
+            <h1 id="person-heading">누구와의 일을 상담할까요?</h1>
+            <p>고민과 관련된 사람을 골라 주세요</p>
           </div>
         </div>
 
@@ -81,7 +89,7 @@ export function SetupScreen({
               {persona.tone}
             </div>
             <div className="personality-picker">
-              <span>어떤 성향으로 대화할까요?</span>
+              <span>눈치코치가 어떤 방식으로 상담할까요?</span>
               <div>
                 {personalityStyles.map((style) => (
                   <button
@@ -106,7 +114,7 @@ export function SetupScreen({
               </p>
             </div>
           </div>
-          <img className="profile-bunny" src={bunnyHeart} alt="" />
+          <img className="profile-bunny" src={bunnyDoodle} alt="" />
           <div className="profile-decoration" aria-hidden="true">
             <span>✦</span>
             <span>●</span>
@@ -119,10 +127,10 @@ export function SetupScreen({
         <div className="title-row">
           <span className="section-number">2</span>
           <div>
-            <h2 id="scenario-heading">대화할 상황은?</h2>
-            <p>AI가 골라 준 상황 중 하나를 선택해요</p>
+            <h2 id="scenario-heading">어떤 일을 상담할까요?</h2>
+            <p>AI가 만든 예절 상담 주제 중 하나를 선택해요</p>
           </div>
-          <span className="ai-label">✦ AI 추천</span>
+          <span className="recommend-label">토끼의 추천</span>
         </div>
 
         {isLoading ? (
@@ -133,7 +141,7 @@ export function SetupScreen({
             <span />
             <span />
             <p>
-              <img src={bunnyLaptop} alt="" />
+              <img src={bunnyDoodle} alt="" />
               상황을 만들고 있어요
             </p>
           </div>
@@ -171,8 +179,8 @@ export function SetupScreen({
             <>
               <span aria-hidden="true">{selectedScenario.emoji}</span>
               <p>
-                <small>{persona.name}와</small>
-                <strong>{personality.label} 성향 · {selectedScenario.title}</strong>
+                <small>{persona.name}와의 일을</small>
+                <strong>{personality.label} 방식으로 상담 · {selectedScenario.title}</strong>
               </p>
             </>
           ) : (
@@ -189,7 +197,7 @@ export function SetupScreen({
           disabled={!selectedScenario}
         >
           <span aria-hidden="true">▶</span>
-          플레이하기
+          상담 시작
         </button>
       </div>
     </div>

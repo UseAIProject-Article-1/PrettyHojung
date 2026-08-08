@@ -29,7 +29,6 @@ export interface Scenario {
   title: string
   hint: string
   openingLine: string
-  samplePhrase: string
 }
 
 export interface ChatMessage {
@@ -42,7 +41,6 @@ export interface Feedback {
   score: number
   goodPoint: string
   betterPoint: string
-  example: string
 }
 
 export interface ReplyContext {
@@ -55,7 +53,10 @@ export interface ReplyContext {
 }
 
 export interface ConversationEngine {
-  suggestScenarios: (personaId: PersonaId) => Promise<Scenario[]>
+  suggestScenarios: (
+    personaId: PersonaId,
+    personality: PersonalityStyle,
+  ) => Promise<Scenario[]>
   reply: (context: ReplyContext) => Promise<string>
   evaluate: (
     persona: Persona,

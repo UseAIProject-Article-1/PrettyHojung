@@ -3,7 +3,7 @@ import './App.css'
 import { ChatScreen } from './components/ChatScreen'
 import { FeedbackScreen } from './components/FeedbackScreen'
 import { SetupScreen } from './components/SetupScreen'
-import bunnyGuide from './assets/nunchi/bunny-guide.png'
+import bunnyGuide from './assets/nunchi/bunny-doodle.svg'
 import { personas, personalityStyles } from './data'
 import { conversationEngine } from './services/conversationEngine'
 import type {
@@ -29,20 +29,33 @@ function App() {
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(true)
   const [isThinking, setIsThinking] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [scenarioRequestVersion, setScenarioRequestVersion] = useState(0)
 
   useEffect(() => {
     let isCurrent = true
     setIsLoadingScenarios(true)
-    conversationEngine.suggestScenarios(persona.id).then((suggestions) => {
-      if (!isCurrent) return
-      setScenarios(suggestions)
-      setIsLoadingScenarios(false)
-    })
+    setApiError(null)
+    conversationEngine.suggestScenarios(persona.id, personality)
+      .then((suggestions) => {
+        if (!isCurrent) return
+        setScenarios(suggestions)
+      })
+      .catch((error: unknown) => {
+        if (!isCurrent) return
+        setScenarios([])
+        setApiError(
+          error instanceof Error ? error.message : 'AI 서버에 연결하지 못했습니다.',
+        )
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoadingScenarios(false)
+      })
 
     return () => {
       isCurrent = false
     }
-  }, [persona])
+  }, [persona, personality, scenarioRequestVersion])
 
   const userTurnCount = messages.filter(
     (message) => message.sender === 'user',
@@ -50,6 +63,11 @@ function App() {
 
   const selectPersona = (nextPersona: Persona) => {
     setPersona(nextPersona)
+    setSelectedScenario(null)
+  }
+
+  const selectPersonality = (nextPersonality: PersonalityStyle) => {
+    setPersonality(nextPersonality)
     setSelectedScenario(null)
   }
 
@@ -69,15 +87,23 @@ function App() {
   const finishConversation = async (finalMessages = messages) => {
     if (!selectedScenario || isThinking) return
     setIsThinking(true)
-    const result = await conversationEngine.evaluate(
-      persona,
-      personality,
-      selectedScenario,
-      finalMessages,
-    )
-    setFeedback(result)
-    setIsThinking(false)
-    setView('feedback')
+    setApiError(null)
+    try {
+      const result = await conversationEngine.evaluate(
+        persona,
+        personality,
+        selectedScenario,
+        finalMessages,
+      )
+      setFeedback(result)
+      setView('feedback')
+    } catch (error) {
+      setApiError(
+        error instanceof Error ? error.message : 'AI 평가를 받지 못했습니다.',
+      )
+    } finally {
+      setIsThinking(false)
+    }
   }
 
   const sendMessage = async (text: string) => {
@@ -100,45 +126,51 @@ function App() {
     const messagesWithUser = [...messages, userMessage]
     setMessages(messagesWithUser)
     setIsThinking(true)
+    setApiError(null)
 
-    const reply = await conversationEngine.reply({
-      persona,
-      personality,
-      scenario: selectedScenario,
-      messages: messagesWithUser,
-      userMessage: userMessage.text,
-      turn,
-    })
-    const completedMessages: ChatMessage[] = [
-      ...messagesWithUser,
-      {
-        id: `assistant-${turn}-${Date.now()}`,
-        sender: 'assistant',
-        text: reply,
-      },
-    ]
-    setMessages(completedMessages)
-
-    if (turn === MAX_USER_TURNS) {
-      const result = await conversationEngine.evaluate(
+    try {
+      const reply = await conversationEngine.reply({
         persona,
         personality,
-        selectedScenario,
-        completedMessages,
-      )
-      setFeedback(result)
-      setIsThinking(false)
-      setView('feedback')
-      return
-    }
+        scenario: selectedScenario,
+        messages: messagesWithUser,
+        userMessage: userMessage.text,
+        turn,
+      })
+      const completedMessages: ChatMessage[] = [
+        ...messagesWithUser,
+        {
+          id: `assistant-${turn}-${Date.now()}`,
+          sender: 'assistant',
+          text: reply,
+        },
+      ]
+      setMessages(completedMessages)
 
-    setIsThinking(false)
+      if (turn === MAX_USER_TURNS) {
+        const result = await conversationEngine.evaluate(
+          persona,
+          personality,
+          selectedScenario,
+          completedMessages,
+        )
+        setFeedback(result)
+        setView('feedback')
+      }
+    } catch (error) {
+      setApiError(
+        error instanceof Error ? error.message : 'AI 답변을 받지 못했습니다.',
+      )
+    } finally {
+      setIsThinking(false)
+    }
   }
 
   const reset = () => {
     setSelectedScenario(null)
     setMessages([])
     setFeedback(null)
+    setApiError(null)
     setView('setup')
   }
 
@@ -161,6 +193,19 @@ function App() {
       </header>
 
       <main>
+        {apiError && (
+          <div className="api-error" role="alert">
+            <span>{apiError}</span>
+            {view === 'setup' && (
+              <button
+                type="button"
+                onClick={() => setScenarioRequestVersion((version) => version + 1)}
+              >
+                다시 시도
+              </button>
+            )}
+          </div>
+        )}
         {view === 'setup' && (
           <SetupScreen
             personas={personas}
@@ -171,7 +216,7 @@ function App() {
             selectedScenario={selectedScenario}
             isLoading={isLoadingScenarios}
             onPersonaSelect={selectPersona}
-            onPersonalitySelect={setPersonality}
+            onPersonalitySelect={selectPersonality}
             onScenarioSelect={setSelectedScenario}
             onStart={startConversation}
           />

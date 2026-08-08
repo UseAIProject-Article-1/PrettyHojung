@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import bunnyThinking from '../assets/nunchi/bunny-thinking.png'
+import bunnyThinking from '../assets/nunchi/bunny-doodle.svg'
 import type {
   ChatMessage,
   Persona,
@@ -55,14 +55,13 @@ export function ChatScreen({
         <div className="chat-person">
           <span
             className="chat-person-avatar"
-            style={{ backgroundColor: `${persona.color}55` }}
             aria-hidden="true"
           >
-            {persona.emoji}
+            🐰
           </span>
           <div>
-            <strong>{persona.name}</strong>
-            <small>{personality.emoji} {personality.label} · {scenario.title}</small>
+            <strong>눈치코치 예절 상담자</strong>
+            <small>{persona.name}와의 일 · {personality.emoji} {personality.label} 상담</small>
           </div>
         </div>
         <div className="turn-progress" aria-label={`${userTurnCount}/${maxTurns}회 답변`}>
@@ -104,14 +103,13 @@ export function ChatScreen({
             {message.sender === 'assistant' && (
               <span
                 className="message-avatar"
-                style={{ backgroundColor: `${persona.color}55` }}
                 aria-hidden="true"
               >
-                {persona.emoji}
+                🐰
               </span>
             )}
             <div>
-              <small>{message.sender === 'assistant' ? persona.name : '나'}</small>
+              <small>{message.sender === 'assistant' ? '눈치코치' : '나'}</small>
               <p>{message.text}</p>
             </div>
           </div>
@@ -120,13 +118,12 @@ export function ChatScreen({
           <div className="message assistant-message thinking">
             <span
               className="message-avatar"
-              style={{ backgroundColor: `${persona.color}55` }}
               aria-hidden="true"
             >
-              {persona.emoji}
+              🐰
             </span>
             <div>
-              <small>{persona.name}</small>
+              <small>눈치코치</small>
               <p>
                 <i />
                 <i />
@@ -139,7 +136,7 @@ export function ChatScreen({
 
       <form className="chat-input-bar" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="chat-message">
-          답변 입력
+          상담 내용 입력
         </label>
         <textarea
           id="chat-message"
@@ -151,7 +148,7 @@ export function ChatScreen({
               event.currentTarget.form?.requestSubmit()
             }
           }}
-          placeholder="자유롭게 답해 보세요"
+          placeholder="어떤 일이 있었는지 편하게 이야기해 주세요"
           rows={1}
           disabled={isThinking}
           autoFocus

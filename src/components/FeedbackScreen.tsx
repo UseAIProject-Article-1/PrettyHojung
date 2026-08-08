@@ -1,4 +1,4 @@
-import bunnyReading from '../assets/nunchi/bunny-reading.png'
+import bunnyReading from '../assets/nunchi/bunny-doodle.svg'
 import type {
   Feedback,
   Persona,
@@ -33,7 +33,7 @@ export function FeedbackScreen({
         </div>
         <span className="complete-chip">대화 완료!</span>
         <h1>내 마음을 잘 말했어요</h1>
-        <p>{persona.name} · {personality.emoji} {personality.label} 성향</p>
+        <p>{persona.name}와의 고민 · {personality.emoji} {personality.label} 상담</p>
       </header>
 
       <section className="score-card" aria-label={`대화 점수 ${feedback.score}%`}>
@@ -69,9 +69,8 @@ export function FeedbackScreen({
         <section className="feedback-item better">
           <div className="feedback-icon" aria-hidden="true">💡</div>
           <div>
-            <span>이렇게 말하면 더 좋아요!</span>
+            <span>다음에 실천할 예절</span>
             <h2>{feedback.betterPoint}</h2>
-            <blockquote>“{feedback.example}”</blockquote>
           </div>
         </section>
       </div>

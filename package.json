@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "backend": "uvicorn backend.app.main:app --host 0.0.0.0 --port 8001",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "npm run build && uvicorn backend.app.main:app --host 0.0.0.0 --port 8001"
   },
   "dependencies": {
     "react": "^19.2.8",
