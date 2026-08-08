@@ -1,0 +1,65 @@
+:root {
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui,
+    sans-serif;
+  color: #29263a;
+  background: #f4f1fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --purple-950: #342b57;
+  --purple-800: #514278;
+  --purple-700: #6956a5;
+  --purple-600: #7c67ba;
+  --purple-500: #9079cd;
+  --purple-200: #ded5f5;
+  --purple-100: #eee9fb;
+  --purple-50: #f7f4fd;
+  --ink: #29263a;
+  --muted: #777187;
+  --line: #e9e4f1;
+  --green: #4c9c7a;
+  --white: #ffffff;
+  --shadow: 0 18px 50px rgba(64, 49, 94, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: #f4f1fb;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(124, 103, 186, 0.3);
+  outline-offset: 2px;
+}
+
+#root {
+  min-height: 100vh;
+}
