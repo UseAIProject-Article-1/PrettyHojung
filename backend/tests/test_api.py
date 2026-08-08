@@ -152,14 +152,13 @@ def test_selected_personality_is_used_in_scenario_and_reply_prompts() -> None:
     assert "무슨 일이 있었는지" in reply_text
     assert "느끼는 감정" in reply_text
     assert "구체적으로 인정하고 공감" in reply_text
-    assert "코치 '눈치코치'" in reply_text
-    assert "상대 역할을 맡아 아이와 역할극" in reply_text
-    assert "코치 '눈치코치'가 고민을" in scenario_text
+    assert "상담자 '눈치코치'" in reply_text
+    assert "절대 연기하지 마세요" in reply_text
+    assert "상담자 '눈치코치'가 아이에게" in scenario_text
     assert "약속을 지키지 못했을 때 먼저 인정" in scenario_text
     assert "필요한 예절 한 가지" in reply_text
     assert "무조건 양보하거나 참으라고 하지 말고" in reply_text
-    assert "추천 문장을 따옴표로 하나 제시하세요" in reply_text
-    assert "[역할극:" in reply_text
+    assert "따라 말할 예문을 먼저 제시하지 마세요" in reply_text
 
 
 def test_evaluation_prompt_forbids_example_phrases() -> None:

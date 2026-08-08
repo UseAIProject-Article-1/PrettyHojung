@@ -60,8 +60,8 @@ export function ChatScreen({
             🐰
           </span>
           <div>
-            <strong>눈치코치 대화 연습</strong>
-            <small>{persona.name} 역할극 · {personality.emoji} {personality.label} 반응</small>
+            <strong>눈치코치 예절 상담자</strong>
+            <small>{persona.name}와의 일 · {personality.emoji} {personality.label} 상담</small>
           </div>
         </div>
         <div className="turn-progress" aria-label={`${userTurnCount}/${maxTurns}회 답변`}>
@@ -109,7 +109,7 @@ export function ChatScreen({
               </span>
             )}
             <div>
-              <small>{message.sender === 'assistant' ? '눈치코치 · 역할극' : '나'}</small>
+              <small>{message.sender === 'assistant' ? '눈치코치' : '나'}</small>
               <p>{message.text}</p>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function ChatScreen({
 
       <form className="chat-input-bar" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="chat-message">
-          연습할 말 입력
+          상담 내용 입력
         </label>
         <textarea
           id="chat-message"
@@ -148,7 +148,7 @@ export function ChatScreen({
               event.currentTarget.form?.requestSubmit()
             }
           }}
-          placeholder="상황을 말하거나 상대에게 할 말을 연습해 보세요"
+          placeholder="어떤 일이 있었는지 편하게 이야기해 주세요"
           rows={1}
           disabled={isThinking}
           autoFocus
