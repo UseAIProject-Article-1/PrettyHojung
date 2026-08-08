@@ -69,9 +69,9 @@ $buffer = [byte[]]::new($stride * $height)
 # Sample the corners to learn the flat background colour.
 $cornerOffsets = @(
   0,
-  ($width - 1) * 4,
-  ($height - 1) * $stride,
-  ($height - 1) * $stride + ($width - 1) * 4
+  (($width - 1) * 4),
+  (($height - 1) * $stride),
+  (($height - 1) * $stride + ($width - 1) * 4)
 )
 $bgB = 0.0; $bgG = 0.0; $bgR = 0.0
 foreach ($offset in $cornerOffsets) {
@@ -103,7 +103,7 @@ $queue = [int[]]::new($pixelCount)
 $head = 0; $tail = 0
 
 for ($x = 0; $x -lt $width; $x++) {
-  foreach ($y in @(0, $height - 1)) {
+  foreach ($y in @(0, ($height - 1))) {
     $index = $y * $width + $x
     if (-not $isBackground[$index] -and $looksLikeBackground[$index]) {
       $isBackground[$index] = $true
@@ -112,7 +112,7 @@ for ($x = 0; $x -lt $width; $x++) {
   }
 }
 for ($y = 0; $y -lt $height; $y++) {
-  foreach ($x in @(0, $width - 1)) {
+  foreach ($x in @(0, ($width - 1))) {
     $index = $y * $width + $x
     if (-not $isBackground[$index] -and $looksLikeBackground[$index]) {
       $isBackground[$index] = $true
