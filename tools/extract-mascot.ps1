@@ -63,7 +63,7 @@ $pixelCount = $width * $height
 $rectangle = New-Object System.Drawing.Rectangle(0, 0, $width, $height)
 $data = $bitmap.LockBits($rectangle, [System.Drawing.Imaging.ImageLockMode]::ReadWrite, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $stride = $data.Stride
-$buffer = New-Object byte[] ($stride * $height)
+$buffer = [byte[]]::new($stride * $height)
 [System.Runtime.InteropServices.Marshal]::Copy($data.Scan0, $buffer, 0, $buffer.Length)
 
 # Sample the corners to learn the flat background colour.
@@ -81,24 +81,31 @@ foreach ($offset in $cornerOffsets) {
 }
 $bgB /= $cornerOffsets.Count; $bgG /= $cornerOffsets.Count; $bgR /= $cornerOffsets.Count
 
-# Flood fill from the borders so only background-connected pixels can be keyed out.
-$isBackground = New-Object bool[] $pixelCount
-$queue = New-Object int[] $pixelCount
-$head = 0; $tail = 0
-
-function Test-BackgroundColor {
-  param([int]$Index)
-  $offset = [int][Math]::Floor($Index / $width) * $stride + ($Index % $width) * 4
-  $db = $buffer[$offset] - $bgB
-  $dg = $buffer[$offset + 1] - $bgG
-  $dr = $buffer[$offset + 2] - $bgR
-  return [Math]::Sqrt($db * $db + $dg * $dg + $dr * $dr) -lt $BackgroundTolerance
+# Measure every pixel against the background colour once, then flood fill over that map.
+$distance = [double[]]::new($pixelCount)
+$looksLikeBackground = [bool[]]::new($pixelCount)
+for ($y = 0; $y -lt $height; $y++) {
+  $rowOffset = $y * $stride
+  $rowIndex = $y * $width
+  for ($x = 0; $x -lt $width; $x++) {
+    $offset = $rowOffset + $x * 4
+    $db = $buffer[$offset] - $bgB
+    $dg = $buffer[$offset + 1] - $bgG
+    $dr = $buffer[$offset + 2] - $bgR
+    $value = [Math]::Sqrt($db * $db + $dg * $dg + $dr * $dr)
+    $distance[$rowIndex + $x] = $value
+    $looksLikeBackground[$rowIndex + $x] = $value -lt $BackgroundTolerance
+  }
 }
+
+$isBackground = [bool[]]::new($pixelCount)
+$queue = [int[]]::new($pixelCount)
+$head = 0; $tail = 0
 
 for ($x = 0; $x -lt $width; $x++) {
   foreach ($y in @(0, $height - 1)) {
     $index = $y * $width + $x
-    if (-not $isBackground[$index] -and (Test-BackgroundColor -Index $index)) {
+    if (-not $isBackground[$index] -and $looksLikeBackground[$index]) {
       $isBackground[$index] = $true
       $queue[$tail++] = $index
     }
@@ -107,7 +114,7 @@ for ($x = 0; $x -lt $width; $x++) {
 for ($y = 0; $y -lt $height; $y++) {
   foreach ($x in @(0, $width - 1)) {
     $index = $y * $width + $x
-    if (-not $isBackground[$index] -and (Test-BackgroundColor -Index $index)) {
+    if (-not $isBackground[$index] -and $looksLikeBackground[$index]) {
       $isBackground[$index] = $true
       $queue[$tail++] = $index
     }
@@ -117,22 +124,28 @@ for ($y = 0; $y -lt $height; $y++) {
 while ($head -lt $tail) {
   $index = $queue[$head++]
   $x = $index % $width
-  $y = [int][Math]::Floor($index / $width)
+  $y = ($index - $x) / $width
 
-  foreach ($step in @(@(1, 0), @(-1, 0), @(0, 1), @(0, -1))) {
-    $nx = $x + $step[0]
-    $ny = $y + $step[1]
-    if ($nx -lt 0 -or $ny -lt 0 -or $nx -ge $width -or $ny -ge $height) { continue }
-    $neighbour = $ny * $width + $nx
-    if ($isBackground[$neighbour]) { continue }
-    if (-not (Test-BackgroundColor -Index $neighbour)) { continue }
-    $isBackground[$neighbour] = $true
-    $queue[$tail++] = $neighbour
+  if ($x -gt 0) {
+    $neighbour = $index - 1
+    if (-not $isBackground[$neighbour] -and $looksLikeBackground[$neighbour]) { $isBackground[$neighbour] = $true; $queue[$tail++] = $neighbour }
+  }
+  if ($x -lt $width - 1) {
+    $neighbour = $index + 1
+    if (-not $isBackground[$neighbour] -and $looksLikeBackground[$neighbour]) { $isBackground[$neighbour] = $true; $queue[$tail++] = $neighbour }
+  }
+  if ($y -gt 0) {
+    $neighbour = $index - $width
+    if (-not $isBackground[$neighbour] -and $looksLikeBackground[$neighbour]) { $isBackground[$neighbour] = $true; $queue[$tail++] = $neighbour }
+  }
+  if ($y -lt $height - 1) {
+    $neighbour = $index + $width
+    if (-not $isBackground[$neighbour] -and $looksLikeBackground[$neighbour]) { $isBackground[$neighbour] = $true; $queue[$tail++] = $neighbour }
   }
 }
 
 # Alpha ramp + un-matting: interior pixels stay solid, glow fades out cleanly.
-$alpha = New-Object byte[] $pixelCount
+$alpha = [byte[]]::new($pixelCount)
 for ($y = 0; $y -lt $height; $y++) {
   $rowOffset = $y * $stride
   for ($x = 0; $x -lt $width; $x++) {
@@ -145,11 +158,7 @@ for ($y = 0; $y -lt $height; $y++) {
       continue
     }
 
-    $db = $buffer[$offset] - $bgB
-    $dg = $buffer[$offset + 1] - $bgG
-    $dr = $buffer[$offset + 2] - $bgR
-    $distance = [Math]::Sqrt($db * $db + $dg * $dg + $dr * $dr)
-    $a = [Math]::Min(1.0, [Math]::Max(0.0, $distance / $EdgeSoftness))
+    $a = [Math]::Min(1.0, [Math]::Max(0.0, $distance[$index] / $EdgeSoftness))
 
     $alpha[$index] = [byte][Math]::Round($a * 255)
     $buffer[$offset + 3] = $alpha[$index]
@@ -163,7 +172,7 @@ for ($y = 0; $y -lt $height; $y++) {
 }
 
 # Keep only the largest character blob so sprite-sheet neighbours are discarded.
-$label = New-Object int[] $pixelCount
+$label = [int[]]::new($pixelCount)
 $currentLabel = 0
 $bestLabel = 0
 $bestSize = 0
@@ -180,16 +189,23 @@ for ($start = 0; $start -lt $pixelCount; $start++) {
     $index = $queue[$head++]
     $size++
     $x = $index % $width
-    $y = [int][Math]::Floor($index / $width)
+    $y = ($index - $x) / $width
 
-    foreach ($step in @(@(1, 0), @(-1, 0), @(0, 1), @(0, -1))) {
-      $nx = $x + $step[0]
-      $ny = $y + $step[1]
-      if ($nx -lt 0 -or $ny -lt 0 -or $nx -ge $width -or $ny -ge $height) { continue }
-      $neighbour = $ny * $width + $nx
-      if ($label[$neighbour] -ne 0 -or $alpha[$neighbour] -lt 40) { continue }
-      $label[$neighbour] = $currentLabel
-      $queue[$tail++] = $neighbour
+    if ($x -gt 0) {
+      $neighbour = $index - 1
+      if ($label[$neighbour] -eq 0 -and $alpha[$neighbour] -ge 40) { $label[$neighbour] = $currentLabel; $queue[$tail++] = $neighbour }
+    }
+    if ($x -lt $width - 1) {
+      $neighbour = $index + 1
+      if ($label[$neighbour] -eq 0 -and $alpha[$neighbour] -ge 40) { $label[$neighbour] = $currentLabel; $queue[$tail++] = $neighbour }
+    }
+    if ($y -gt 0) {
+      $neighbour = $index - $width
+      if ($label[$neighbour] -eq 0 -and $alpha[$neighbour] -ge 40) { $label[$neighbour] = $currentLabel; $queue[$tail++] = $neighbour }
+    }
+    if ($y -lt $height - 1) {
+      $neighbour = $index + $width
+      if ($label[$neighbour] -eq 0 -and $alpha[$neighbour] -ge 40) { $label[$neighbour] = $currentLabel; $queue[$tail++] = $neighbour }
     }
   }
 
