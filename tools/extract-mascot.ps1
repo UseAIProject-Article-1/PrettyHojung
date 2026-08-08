@@ -3,13 +3,15 @@
   Cuts a character out of flat-background artwork and saves a tightly cropped transparent PNG.
 
 .DESCRIPTION
-  The supplied mascot artwork sits on a flat background (grey or white) with a soft glow.
-  A plain brightness key would erase the dark eyes and headphones, so this script instead:
-    1. keys only the background-connected region, which protects dark interior details,
-    2. ramps alpha across the glow so edges stay soft,
-    3. un-mattes the remaining colour so no background tint is left behind,
-    4. keeps the largest character blob and crops to its bounds, so no neighbouring
-       sprite from the same sheet leaks into the export.
+  The supplied mascot artwork sits on a flat grey or white background and is wrapped in a
+  soft white glow. A plain brightness key would erase the dark eyes and headphones, so this
+  script keys on colourfulness instead:
+    1. grey background and white glow are both nearly colourless, the character is not,
+    2. only colourless pixels that connect to the image border are removed, which protects
+       the white highlights and eye whites inside the character,
+    3. alpha ramps with colourfulness so the outline stays soft rather than jagged,
+    4. the largest remaining blob wins and the export is cropped to it, so a neighbouring
+       sprite on the same sheet never leaks in.
 
 .EXAMPLE
   ./tools/extract-mascot.ps1 -Source art.png -Destination src/assets/nunchi/bunny.png
@@ -22,9 +24,9 @@ param(
   [int]$CropWidth = 0,
   [int]$CropHeight = 0,
   [int]$MaxWidth = 420,
-  [double]$EdgeSoftness = 70,
-  [double]$BackgroundTolerance = 92,
-  [int]$Padding = 6
+  [double]$ColorThreshold = 26,
+  [double]$EdgeFloor = 6,
+  [int]$Padding = 8
 )
 
 $ErrorActionPreference = 'Stop'
@@ -66,35 +68,25 @@ $stride = $data.Stride
 $buffer = [byte[]]::new($stride * $height)
 [System.Runtime.InteropServices.Marshal]::Copy($data.Scan0, $buffer, 0, $buffer.Length)
 
-# Sample the corners to learn the flat background colour.
-$cornerOffsets = @(
-  0,
-  (($width - 1) * 4),
-  (($height - 1) * $stride),
-  (($height - 1) * $stride + ($width - 1) * 4)
-)
-$bgB = 0.0; $bgG = 0.0; $bgR = 0.0
-foreach ($offset in $cornerOffsets) {
-  $bgB += $buffer[$offset]
-  $bgG += $buffer[$offset + 1]
-  $bgR += $buffer[$offset + 2]
-}
-$bgB /= $cornerOffsets.Count; $bgG /= $cornerOffsets.Count; $bgR /= $cornerOffsets.Count
-
-# Measure every pixel against the background colour once, then flood fill over that map.
-$distance = [double[]]::new($pixelCount)
+# Grey background and white glow are both colourless, so colourfulness separates them
+# from the character far more reliably than brightness does.
+$colorfulness = [double[]]::new($pixelCount)
 $looksLikeBackground = [bool[]]::new($pixelCount)
 for ($y = 0; $y -lt $height; $y++) {
   $rowOffset = $y * $stride
   $rowIndex = $y * $width
   for ($x = 0; $x -lt $width; $x++) {
     $offset = $rowOffset + $x * 4
-    $db = $buffer[$offset] - $bgB
-    $dg = $buffer[$offset + 1] - $bgG
-    $dr = $buffer[$offset + 2] - $bgR
-    $value = [Math]::Sqrt($db * $db + $dg * $dg + $dr * $dr)
-    $distance[$rowIndex + $x] = $value
-    $looksLikeBackground[$rowIndex + $x] = $value -lt $BackgroundTolerance
+    $b = $buffer[$offset]
+    $g = $buffer[$offset + 1]
+    $r = $buffer[$offset + 2]
+
+    $max = [Math]::Max($r, [Math]::Max($g, $b))
+    $min = [Math]::Min($r, [Math]::Min($g, $b))
+    $value = $max - $min
+
+    $colorfulness[$rowIndex + $x] = $value
+    $looksLikeBackground[$rowIndex + $x] = $value -lt $ColorThreshold
   }
 }
 
@@ -144,8 +136,9 @@ while ($head -lt $tail) {
   }
 }
 
-# Alpha ramp + un-matting: interior pixels stay solid, glow fades out cleanly.
+# Border-connected pixels fade out with colourfulness; everything else stays solid.
 $alpha = [byte[]]::new($pixelCount)
+$range = [Math]::Max(1.0, $ColorThreshold - $EdgeFloor)
 for ($y = 0; $y -lt $height; $y++) {
   $rowOffset = $y * $stride
   for ($x = 0; $x -lt $width; $x++) {
@@ -158,16 +151,9 @@ for ($y = 0; $y -lt $height; $y++) {
       continue
     }
 
-    $a = [Math]::Min(1.0, [Math]::Max(0.0, $distance[$index] / $EdgeSoftness))
-
+    $a = [Math]::Min(1.0, [Math]::Max(0.0, ($colorfulness[$index] - $EdgeFloor) / $range))
     $alpha[$index] = [byte][Math]::Round($a * 255)
     $buffer[$offset + 3] = $alpha[$index]
-
-    if ($a -gt 0.004) {
-      $buffer[$offset] = [byte][Math]::Min(255, [Math]::Max(0, [Math]::Round(($buffer[$offset] - $bgB * (1 - $a)) / $a)))
-      $buffer[$offset + 1] = [byte][Math]::Min(255, [Math]::Max(0, [Math]::Round(($buffer[$offset + 1] - $bgG * (1 - $a)) / $a)))
-      $buffer[$offset + 2] = [byte][Math]::Min(255, [Math]::Max(0, [Math]::Round(($buffer[$offset + 2] - $bgR * (1 - $a)) / $a)))
-    }
   }
 }
 
