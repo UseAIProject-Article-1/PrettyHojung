@@ -1,4 +1,4 @@
-import bunnyReading from '../assets/nunchi/bunny-reading.png'
+import bunnyReading from '../assets/nunchi/bunny-doodle.svg'
 import type {
   Feedback,
   Persona,
@@ -52,7 +52,7 @@ export function FeedbackScreen({
           <span>{scenario.emoji}</span>
           <p>
             <small>{scenario.title}</small>
-            <strong>용기 레벨 UP!</strong>
+            <strong>용기가 한 칸 쑥!</strong>
           </p>
         </div>
       </section>

@@ -3,7 +3,7 @@ import './App.css'
 import { ChatScreen } from './components/ChatScreen'
 import { FeedbackScreen } from './components/FeedbackScreen'
 import { SetupScreen } from './components/SetupScreen'
-import bunnyGuide from './assets/nunchi/bunny-guide.png'
+import bunnyGuide from './assets/nunchi/bunny-doodle.svg'
 import { personas, personalityStyles } from './data'
 import { conversationEngine } from './services/conversationEngine'
 import type {

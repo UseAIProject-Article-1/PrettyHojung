@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import bunnyThinking from '../assets/nunchi/bunny-thinking.png'
+import bunnyThinking from '../assets/nunchi/bunny-doodle.svg'
 import type {
   ChatMessage,
   Persona,

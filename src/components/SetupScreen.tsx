@@ -1,5 +1,4 @@
-import bunnyHeart from '../assets/nunchi/bunny-heart.png'
-import bunnyLaptop from '../assets/nunchi/bunny-laptop.png'
+import bunnyDoodle from '../assets/nunchi/bunny-doodle.svg'
 import type { Persona, PersonalityStyle, Scenario } from '../types'
 
 interface SetupScreenProps {
@@ -31,6 +30,15 @@ export function SetupScreen({
 }: SetupScreenProps) {
   return (
     <div className="setup-page page">
+      <div className="setup-intro">
+        <div>
+          <span>오늘의 말 연습</span>
+          <h1>마음속 말을<br />천천히 꺼내 봐요</h1>
+          <p>정답은 없어요. 토끼 코치가 옆에서 가만히 들어줄게요.</p>
+        </div>
+        <img src={bunnyDoodle} alt="꽃을 든 토끼 코치" />
+      </div>
+
       <section aria-labelledby="person-heading">
         <div className="title-row">
           <span className="section-number">1</span>
@@ -106,7 +114,7 @@ export function SetupScreen({
               </p>
             </div>
           </div>
-          <img className="profile-bunny" src={bunnyHeart} alt="" />
+          <img className="profile-bunny" src={bunnyDoodle} alt="" />
           <div className="profile-decoration" aria-hidden="true">
             <span>✦</span>
             <span>●</span>
@@ -120,9 +128,9 @@ export function SetupScreen({
           <span className="section-number">2</span>
           <div>
             <h2 id="scenario-heading">대화할 상황은?</h2>
-            <p>AI가 골라 준 상황 중 하나를 선택해요</p>
+            <p>지금 연습해 보고 싶은 장면을 골라 주세요</p>
           </div>
-          <span className="ai-label">✦ AI 추천</span>
+          <span className="recommend-label">토끼의 추천</span>
         </div>
 
         {isLoading ? (
@@ -133,8 +141,8 @@ export function SetupScreen({
             <span />
             <span />
             <p>
-              <img src={bunnyLaptop} alt="" />
-              상황을 만들고 있어요
+              <img src={bunnyDoodle} alt="" />
+              어울리는 상황을 찾고 있어요
             </p>
           </div>
         ) : (
@@ -189,7 +197,7 @@ export function SetupScreen({
           disabled={!selectedScenario}
         >
           <span aria-hidden="true">▶</span>
-          플레이하기
+          대화 연습 시작
         </button>
       </div>
     </div>
