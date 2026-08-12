@@ -4,7 +4,7 @@ import { ChatScreen } from './components/ChatScreen'
 import { FeedbackScreen } from './components/FeedbackScreen'
 import { SetupScreen } from './components/SetupScreen'
 import bunnyGuide from './assets/nunchi/bunny-doodle.svg'
-import { personas, personalityStyles } from './data'
+import { getFallbackScenarios, personas, personalityStyles } from './data'
 import { conversationEngine } from './services/conversationEngine'
 import type {
   ChatMessage,
@@ -43,9 +43,11 @@ function App() {
       })
       .catch((error: unknown) => {
         if (!isCurrent) return
-        setScenarios([])
+        setScenarios(getFallbackScenarios(persona.id))
         setApiError(
-          error instanceof Error ? error.message : 'AI 서버에 연결하지 못했습니다.',
+          error instanceof Error
+            ? `${error.message} 기본 추천 상황을 보여 드릴게요.`
+            : 'AI 서버에 연결하지 못해 기본 추천 상황을 보여 드릴게요.',
         )
       })
       .finally(() => {

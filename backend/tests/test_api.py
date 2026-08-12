@@ -70,6 +70,19 @@ def test_health() -> None:
     assert response.json() == {"status": "ok"}
 
 
+def test_conversation_service_reloads_environment_settings(monkeypatch) -> None:
+    app.dependency_overrides.pop(get_conversation_service, None)
+    monkeypatch.setenv("CHAT_MODEL", "first-model")
+    first_service = get_conversation_service()
+    monkeypatch.setenv("CHAT_MODEL", "second-model")
+    second_service = get_conversation_service()
+
+    assert first_service is not second_service
+    assert first_service._settings.chat_model == "first-model"
+    assert second_service._settings.chat_model == "second-model"
+    app.dependency_overrides[get_conversation_service] = lambda: FakeConversationService()
+
+
 def test_suggest_scenarios_uses_frontend_field_names() -> None:
     response = client.post(
         "/api/conversation/suggest-scenarios",

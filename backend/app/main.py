@@ -1,4 +1,3 @@
-from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
@@ -22,7 +21,6 @@ from .service import (
 )
 
 
-@lru_cache
 def get_conversation_service() -> ConversationService:
     return ConversationService(get_settings())
 
@@ -35,10 +33,10 @@ app = FastAPI(
     description="초등학생 대화 연습을 위한 APIM 기반 FastAPI 백엔드",
 )
 
-settings = get_settings()
+startup_settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
+    allow_origins=startup_settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
@@ -54,6 +52,8 @@ def raise_http_error(error: RuntimeError) -> None:
     if isinstance(error, ConfigurationError):
         raise HTTPException(status_code=503, detail=str(error)) from error
     if isinstance(error, InvalidAIResponseError):
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    if isinstance(error, UpstreamAIError):
         raise HTTPException(status_code=502, detail=str(error)) from error
     raise HTTPException(status_code=502, detail="AI 서비스 요청에 실패했습니다.") from error
 
