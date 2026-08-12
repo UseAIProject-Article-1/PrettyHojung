@@ -1,13 +1,11 @@
 import { scenarioPools } from '../data'
+import { buildFeedback, sessionRules } from './scoring'
 import type {
-  ChatMessage,
   ConversationEngine,
-  Feedback,
-  Persona,
   PersonaId,
   PersonalityStyle,
   ReplyContext,
-  Scenario,
+  ScoringInput,
 } from '../types'
 
 const wait = (milliseconds: number) =>
@@ -67,30 +65,12 @@ const getLocalReply = ({
   return replies[Math.min(turn - 1, replies.length - 1)]
 }
 
-const getLocalFeedback = (
-  personality: PersonalityStyle,
-  scenario: Scenario,
-  messages: ChatMessage[],
-): Feedback => {
-  const userMessages = messages.filter((message) => message.sender === 'user')
-  const joinedText = userMessages.map((message) => message.text).join(' ')
-  const usedKindWords = /고마|미안|주세요|줄래|할까|어때/.test(joinedText)
-  const score = Math.min(98, 72 + userMessages.length * 4 + (usedKindWords ? 6 : 0))
-
-  return {
-    score,
-    goodPoint: userMessages.length === 0
-      ? '대화를 시작할 사람과 상황을 스스로 골랐어요.'
-      : usedKindWords
-      ? '상대를 생각하는 말로 내 마음을 잘 전했어요.'
-      : `${personality.label} 상대에게 피하지 않고 내 생각을 말했어요.`,
-    betterPoint: '내가 바라는 행동을 한 문장으로 더 분명하게 말해 봐요.',
-    example: scenario.samplePhrase,
-  }
-}
-
 // OpenAI calls should live behind a server endpoint; this client only consumes the engine contract.
 export const conversationEngine: ConversationEngine = {
+  async loadRules() {
+    return sessionRules
+  },
+
   async suggestScenarios(personaId: PersonaId) {
     await wait(350)
     return shuffle(scenarioPools[personaId]).slice(0, 5)
@@ -101,13 +81,8 @@ export const conversationEngine: ConversationEngine = {
     return getLocalReply(context)
   },
 
-  async evaluate(
-    _persona: Persona,
-    personality: PersonalityStyle,
-    scenario: Scenario,
-    messages: ChatMessage[],
-  ) {
+  async evaluate(input: ScoringInput) {
     await wait(400)
-    return getLocalFeedback(personality, scenario, messages)
+    return buildFeedback(input)
   },
 }

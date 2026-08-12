@@ -32,7 +32,7 @@ export function FeedbackScreen({
           <span>＋</span>
         </div>
         <span className="complete-chip">대화 완료!</span>
-        <h1>내 마음을 잘 말했어요</h1>
+        <h1>{feedback.level.emoji} {feedback.level.label}</h1>
         <p>{persona.name} · {personality.emoji} {personality.label} 성향</p>
       </header>
 
@@ -52,10 +52,22 @@ export function FeedbackScreen({
           <span>{scenario.emoji}</span>
           <p>
             <small>{scenario.title}</small>
-            <strong>용기 레벨 UP!</strong>
+            <strong>
+              {feedback.progress.maxTurns}번 중 {feedback.progress.completedTurns}번 답했어요
+            </strong>
           </p>
         </div>
       </section>
+
+      <ul className="score-criteria">
+        {feedback.criteria.map((criterion) => (
+          <li key={criterion.id} className={criterion.achieved ? 'achieved' : ''}>
+            <span aria-hidden="true">{criterion.emoji}</span>
+            <small>{criterion.label}</small>
+            <b>{criterion.score}%</b>
+          </li>
+        ))}
+      </ul>
 
       <div className="feedback-cards">
         <section className="feedback-item good">

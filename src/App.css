@@ -994,6 +994,48 @@ button {
   font-size: 15px;
 }
 
+.score-criteria {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.score-criteria li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  border: 1.5px solid #ece8f6;
+  border-radius: 16px;
+  background: #fbfaff;
+  opacity: 0.55;
+}
+
+.score-criteria li.achieved {
+  border-color: #cdbcf2;
+  background: #f4efff;
+  opacity: 1;
+}
+
+.score-criteria li span {
+  font-size: 20px;
+}
+
+.score-criteria li small {
+  color: #6f6780;
+  font-size: 9px;
+  text-align: center;
+}
+
+.score-criteria li b {
+  color: #7562b5;
+  font-size: 12px;
+}
+
 .feedback-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;

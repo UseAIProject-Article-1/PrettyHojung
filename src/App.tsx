@@ -6,19 +6,20 @@ import { SetupScreen } from './components/SetupScreen'
 import bunnyGuide from './assets/nunchi/bunny-guide.png'
 import { personas, personalityStyles } from './data'
 import { conversationEngine } from './services/conversationEngine'
+import { getProgress, sessionRules } from './services/scoring'
 import type {
   ChatMessage,
   Feedback,
   Persona,
   PersonalityStyle,
   Scenario,
+  SessionRules,
   ViewMode,
 } from './types'
 
-const MAX_USER_TURNS = 5
-
 function App() {
   const [view, setView] = useState<ViewMode>('setup')
+  const [rules, setRules] = useState<SessionRules>(sessionRules)
   const [persona, setPersona] = useState<Persona>(personas[0])
   const [personality, setPersonality] = useState<PersonalityStyle>(
     personalityStyles[0],
@@ -29,6 +30,17 @@ function App() {
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(true)
   const [isThinking, setIsThinking] = useState(false)
+
+  useEffect(() => {
+    let isCurrent = true
+    conversationEngine.loadRules?.().then((nextRules) => {
+      if (isCurrent) setRules(nextRules)
+    })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
 
   useEffect(() => {
     let isCurrent = true
@@ -44,9 +56,7 @@ function App() {
     }
   }, [persona])
 
-  const userTurnCount = messages.filter(
-    (message) => message.sender === 'user',
-  ).length
+  const progress = getProgress(messages, rules)
 
   const selectPersona = (nextPersona: Persona) => {
     setPersona(nextPersona)
@@ -69,12 +79,13 @@ function App() {
   const finishConversation = async (finalMessages = messages) => {
     if (!selectedScenario || isThinking) return
     setIsThinking(true)
-    const result = await conversationEngine.evaluate(
+    const result = await conversationEngine.evaluate({
       persona,
       personality,
-      selectedScenario,
-      finalMessages,
-    )
+      scenario: selectedScenario,
+      messages: finalMessages,
+      rules,
+    })
     setFeedback(result)
     setIsThinking(false)
     setView('feedback')
@@ -86,12 +97,12 @@ function App() {
       !selectedScenario ||
       !trimmedText ||
       isThinking ||
-      userTurnCount >= MAX_USER_TURNS
+      progress.isComplete
     ) {
       return
     }
 
-    const turn = userTurnCount + 1
+    const turn = progress.completedTurns + 1
     const userMessage: ChatMessage = {
       id: `user-${turn}-${Date.now()}`,
       sender: 'user',
@@ -119,13 +130,14 @@ function App() {
     ]
     setMessages(completedMessages)
 
-    if (turn === MAX_USER_TURNS) {
-      const result = await conversationEngine.evaluate(
+    if (turn >= rules.maxUserTurns) {
+      const result = await conversationEngine.evaluate({
         persona,
         personality,
-        selectedScenario,
-        completedMessages,
-      )
+        scenario: selectedScenario,
+        messages: completedMessages,
+        rules,
+      })
       setFeedback(result)
       setIsThinking(false)
       setView('feedback')
@@ -182,8 +194,7 @@ function App() {
             personality={personality}
             scenario={selectedScenario}
             messages={messages}
-            userTurnCount={userTurnCount}
-            maxTurns={MAX_USER_TURNS}
+            progress={progress}
             isThinking={isThinking}
             onSend={sendMessage}
             onEnd={() => finishConversation()}

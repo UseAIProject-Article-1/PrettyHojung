@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import bunnyThinking from '../assets/nunchi/bunny-thinking.png'
 import type {
   ChatMessage,
+  ConversationProgress,
   Persona,
   PersonalityStyle,
   Scenario,
@@ -13,8 +14,7 @@ interface ChatScreenProps {
   personality: PersonalityStyle
   scenario: Scenario
   messages: ChatMessage[]
-  userTurnCount: number
-  maxTurns: number
+  progress: ConversationProgress
   isThinking: boolean
   onSend: (message: string) => void
   onEnd: () => void
@@ -25,8 +25,7 @@ export function ChatScreen({
   personality,
   scenario,
   messages,
-  userTurnCount,
-  maxTurns,
+  progress,
   isThinking,
   onSend,
   onEnd,
@@ -65,15 +64,22 @@ export function ChatScreen({
             <small>{personality.emoji} {personality.label} · {scenario.title}</small>
           </div>
         </div>
-        <div className="turn-progress" aria-label={`${userTurnCount}/${maxTurns}회 답변`}>
-          {Array.from({ length: maxTurns }, (_, index) => (
+        <div
+          className="turn-progress"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={progress.maxTurns}
+          aria-valuenow={progress.completedTurns}
+          aria-valuetext={`${progress.maxTurns}번 중 ${progress.completedTurns}번 답했어요`}
+        >
+          {Array.from({ length: progress.maxTurns }, (_, index) => (
             <i
               key={index}
-              className={index < userTurnCount ? 'filled' : ''}
+              className={index < progress.completedTurns ? 'filled' : ''}
               aria-hidden="true"
             />
           ))}
-          <span>{userTurnCount}/{maxTurns}</span>
+          <span>{progress.completedTurns}/{progress.maxTurns}</span>
         </div>
         <button
           className="end-button"
@@ -164,7 +170,7 @@ export function ChatScreen({
         >
           ↑
         </button>
-        <p>Enter로 보내기 · 답변은 최대 5번</p>
+        <p>Enter로 보내기 · 답변은 최대 {progress.maxTurns}번</p>
       </form>
     </div>
   )
