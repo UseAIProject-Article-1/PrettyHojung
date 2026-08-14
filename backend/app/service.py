@@ -1,5 +1,6 @@
 import json
 import asyncio
+import re
 from typing import Any
 from uuid import uuid4
 
@@ -178,6 +179,13 @@ class ConversationService:
                 "APIM의 AI 응답이 필요한 JSON 구조와 맞지 않습니다."
             ) from exc
 
+    @staticmethod
+    def _sanitize_reply(content: str) -> str:
+        text = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", content)
+        text = text.replace("**", "").replace("__", "").replace("`", "")
+        text = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"\1", text)
+        return text.strip()
+
     async def suggest_scenarios(
         self,
         persona_id: PersonaId,
@@ -222,7 +230,7 @@ class ConversationService:
             user_message,
             turn,
         )
-        return await self._chat(
+        content = await self._chat(
             [
                 {
                     "role": "system",
@@ -240,14 +248,20 @@ class ConversationService:
                         "학생이 해야 할 정답 문장을 먼저 만들지 마세요. "
                         "상대 대사에 학생이 답한 직후에는 새 상대 대사를 절대 만들지 말고, "
                         "부족하면 상대 대사 없이 재시도시키고 적절하면 마무리하세요. "
+                        "학생이 답을 모르거나 예시를 직접 요청하면 짧은 실제 표현 예시를 주세요. "
+                        "같은 롤플레이의 재시도 요청은 최대 한 번이며, 두 번째에는 예시를 주고 끝내세요. "
+                        "학생의 의도가 상황에 맞게 전달되면 세부 정보나 부탁 표현이 조금 부족해도 "
+                        "다시 말하게 하지 말고 팁만 준 뒤 마무리하세요. "
                         "5턴은 상한일 뿐 목표가 아닙니다. 학생이 적절히 한 번 답하면 "
                         "새 상대 반응이나 추가 연습을 만들지 말고 구체적으로 칭찬하며 마무리하세요. "
+                        "Markdown 문법이나 서식용 별표·백틱·제목 기호를 출력하지 마세요. "
                         "아이에게 무조건 참으라고 하거나 훈계하지 마세요."
                     ),
                 },
                 {"role": "user", "content": prompt},
             ]
         )
+        return self._sanitize_reply(content)
 
     async def evaluate(
         self,

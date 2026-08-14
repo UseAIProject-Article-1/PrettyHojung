@@ -141,3 +141,44 @@ def test_transient_apim_errors_are_retried() -> None:
 
     assert asyncio.run(run()) == "천천히 말해 줘."
     assert attempts == 3
+
+
+def test_reply_removes_markdown_formatting() -> None:
+    def handler(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "## 연습\n**짧게** `말해 봐`.",
+                        }
+                    }
+                ]
+            },
+        )
+
+    async def run() -> str:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+            service = ConversationService(
+                Settings(
+                    apim_base_url="https://apim.example.com",
+                    apim_key="secret",
+                ),
+                client,
+            )
+            return await service.reply(
+                PERSONA,
+                PERSONALITY,
+                SCENARIO,
+                [],
+                "뭐라고 해야 돼?",
+                5,
+            )
+
+    result = asyncio.run(run())
+    assert result == "연습\n짧게 말해 봐."
+    assert "**" not in result
+    assert "##" not in result
+    assert "`" not in result

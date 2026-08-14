@@ -167,7 +167,14 @@ def test_selected_personality_is_used_in_scenario_and_reply_prompts() -> None:
     assert "아이가 직접 한 번 더 말하게" in reply_text
     assert "사소한 말투를 더 다듬기 위해 다시 말하게 하지 말고" in reply_text
     assert "새 상대 반응이나 더 어려운 상황을 덧붙여" in reply_text
+    assert "표현 방법을 직접 요청하거나 답을 떠올리지 못한다고 분명히 말하면" in reply_text
+    assert "재시도 요청은 최대 한 번만" in reply_text
+    assert "재시도한 답이 여전히 부족하면" in reply_text
+    assert "아까 풀었던 문제 하나도 이해 안돼요" in reply_text
+    assert "팁만 짧게 주고 진행하거나 마무리하세요" in reply_text
     assert "현재 턴이 5/5이면 새 질문이나 새 연습을 시작하지 말고" in reply_text
+    assert "5/5 답변에서는 학생이 부족하거나 도움을 요청해도" in reply_text
+    assert "Markdown 문법을 절대 사용하지 마세요" in reply_text
     assert "일반 예절 롤플레이를 진행하지 마세요" in reply_text
     assert "상담자 '눈치코치'가 아이에게" in scenario_text
     assert "약속을 지키지 못했을 때 먼저 인정" in scenario_text
