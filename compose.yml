@@ -1,0 +1,17 @@
+services:
+  prettyhojung:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: ./backend/.env
+        required: false
+    expose:
+      - "8010"
+    networks:
+      - mvtp-web-net
+
+networks:
+  mvtp-web-net:
+    external: true
