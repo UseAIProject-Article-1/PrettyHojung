@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Backend secrets and Python artifacts
+backend/.env
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

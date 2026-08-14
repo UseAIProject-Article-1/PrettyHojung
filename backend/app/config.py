@@ -1,4 +1,3 @@
-from functools import lru_cache
 from pathlib import Path
 from urllib.parse import quote
 
@@ -57,6 +56,10 @@ class Settings(BaseSettings):
         return 5 if value is None or value == "" else value
 
 
-@lru_cache
 def get_settings() -> Settings:
+    """Load the latest environment-backed settings.
+
+    APIM configuration can be corrected while the server is running, so this
+    function intentionally does not cache the Settings instance.
+    """
     return Settings()
