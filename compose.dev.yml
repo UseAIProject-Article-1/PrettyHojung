@@ -1,0 +1,25 @@
+name: prettyhojung-dev
+
+services:
+  prettyhojung-dev:
+    container_name: prettyhojung-dev
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    env_file:
+      - path: ./backend/.env
+        required: true
+
+    ports:
+      - "127.0.0.1:8011:8010"
+
+    networks:
+      - mvtp-web-net
+
+networks:
+  mvtp-web-net:
+    external: true

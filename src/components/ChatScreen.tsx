@@ -16,6 +16,7 @@ interface ChatScreenProps {
   userTurnCount: number
   maxTurns: number
   isThinking: boolean
+  isComplete: boolean
   onSend: (message: string) => void
   onEnd: () => void
 }
@@ -28,6 +29,7 @@ export function ChatScreen({
   userTurnCount,
   maxTurns,
   isThinking,
+  isComplete,
   onSend,
   onEnd,
 }: ChatScreenProps) {
@@ -44,7 +46,7 @@ export function ChatScreen({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const message = input.trim()
-    if (!message || isThinking) return
+    if (!message || isThinking || isComplete) return
     onSend(message)
     setInput('')
   }
@@ -80,7 +82,7 @@ export function ChatScreen({
           onClick={onEnd}
           disabled={isThinking}
         >
-          대화 종료
+          {isComplete ? '대화 마치기' : '대화 종료'}
         </button>
       </header>
 
@@ -148,15 +150,15 @@ export function ChatScreen({
               event.currentTarget.form?.requestSubmit()
             }
           }}
-          placeholder="어떤 일이 있었는지 편하게 이야기해 주세요"
+          placeholder={isComplete ? '상담이 끝났어요. 대화 마치기를 눌러 주세요.' : '어떤 일이 있었는지 편하게 이야기해 주세요'}
           rows={1}
-          disabled={isThinking}
+          disabled={isThinking || isComplete}
           autoFocus
         />
         <button
           type="submit"
           className="send-button"
-          disabled={!input.trim() || isThinking}
+          disabled={!input.trim() || isThinking || isComplete}
           aria-label="답변 보내기"
         >
           ↑

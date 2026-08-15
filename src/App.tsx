@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { ChatScreen } from './components/ChatScreen'
 import { FeedbackScreen } from './components/FeedbackScreen'
@@ -29,8 +29,10 @@ function App() {
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [isLoadingScenarios, setIsLoadingScenarios] = useState(true)
   const [isThinking, setIsThinking] = useState(false)
+  const [isConversationComplete, setIsConversationComplete] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [scenarioRequestVersion, setScenarioRequestVersion] = useState(0)
+  const evaluationInFlightRef = useRef(false)
 
   useEffect(() => {
     let isCurrent = true
@@ -81,11 +83,13 @@ function App() {
       },
     ])
     setFeedback(null)
+    setIsConversationComplete(false)
     setView('chat')
   }
 
   const finishConversation = async (finalMessages = messages) => {
-    if (!selectedScenario || isThinking) return
+    if (!selectedScenario || isThinking || evaluationInFlightRef.current) return
+    evaluationInFlightRef.current = true
     setIsThinking(true)
     setApiError(null)
     try {
@@ -102,6 +106,7 @@ function App() {
         error instanceof Error ? error.message : 'AI 평가를 받지 못했습니다.',
       )
     } finally {
+      evaluationInFlightRef.current = false
       setIsThinking(false)
     }
   }
@@ -112,6 +117,7 @@ function App() {
       !selectedScenario ||
       !trimmedText ||
       isThinking ||
+      isConversationComplete ||
       userTurnCount >= MAX_USER_TURNS
     ) {
       return
@@ -148,14 +154,7 @@ function App() {
       setMessages(completedMessages)
 
       if (turn === MAX_USER_TURNS) {
-        const result = await conversationEngine.evaluate(
-          persona,
-          personality,
-          selectedScenario,
-          completedMessages,
-        )
-        setFeedback(result)
-        setView('feedback')
+        setIsConversationComplete(true)
       }
     } catch (error) {
       setApiError(
@@ -170,6 +169,7 @@ function App() {
     setSelectedScenario(null)
     setMessages([])
     setFeedback(null)
+    setIsConversationComplete(false)
     setApiError(null)
     setView('setup')
   }
@@ -230,6 +230,7 @@ function App() {
             userTurnCount={userTurnCount}
             maxTurns={MAX_USER_TURNS}
             isThinking={isThinking}
+            isComplete={isConversationComplete}
             onSend={sendMessage}
             onEnd={() => finishConversation()}
           />

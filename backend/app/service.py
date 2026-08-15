@@ -1,5 +1,6 @@
 import json
 import asyncio
+import re
 from typing import Any
 from uuid import uuid4
 
@@ -178,6 +179,13 @@ class ConversationService:
                 "APIM의 AI 응답이 필요한 JSON 구조와 맞지 않습니다."
             ) from exc
 
+    @staticmethod
+    def _sanitize_reply(content: str) -> str:
+        text = re.sub(r"(?m)^\s{0,3}#{1,6}\s+", "", content)
+        text = text.replace("**", "").replace("__", "").replace("`", "")
+        text = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"\1", text)
+        return text.strip()
+
     async def suggest_scenarios(
         self,
         persona_id: PersonaId,
@@ -222,22 +230,38 @@ class ConversationService:
             user_message,
             turn,
         )
-        return await self._chat(
+        content = await self._chat(
             [
                 {
                     "role": "system",
                     "content": (
                         "당신은 어린이 상담자 '눈치코치'입니다. "
-                        "상담 주제에 등장하는 부모님, 선생님, 친구를 연기하지 마세요. "
+                        "상담자 정체성을 유지하되 연습 단계에는 상담 상대가 할 법한 "
+                        "짧은 대사 한 문장을 제시할 수 있습니다. "
+                        "상대 대사는 반드시 상담 상대가 아이에게 하는 말이어야 하며, "
+                        "아이가 상대에게 해야 할 정답을 상대 대사로 표시하면 안 됩니다. "
                         "선택한 상담 방식을 유지하세요. "
-                        "아이의 상황과 감정을 먼저 이해하고 구체적으로 공감한 뒤, "
-                        "관계와 맥락에 맞는 예절의 이유와 실천 행동 하나를 알려 주세요. "
+                        "초반에는 상황·감정·원하는 점을 파악하고, 이후 학생이 직접 답하는 "
+                        "롤플레이와 실제 답변에 근거한 피드백·재시도·종료를 진행하세요. "
+                        "안전 상황이 아닌 1턴에는 롤플레이를 시작하지 말고 구체적 공감과 "
+                        "누락 정보 질문 하나만 하세요. 롤플레이 전환은 2턴부터 가능합니다. "
+                        "학생이 해야 할 정답 문장을 먼저 만들지 마세요. "
+                        "상대 대사에 학생이 답한 직후에는 새 상대 대사를 절대 만들지 말고, "
+                        "부족하면 상대 대사 없이 재시도시키고 적절하면 마무리하세요. "
+                        "학생이 답을 모르거나 예시를 직접 요청하면 짧은 실제 표현 예시를 주세요. "
+                        "같은 롤플레이의 재시도 요청은 최대 한 번이며, 두 번째에는 예시를 주고 끝내세요. "
+                        "학생의 의도가 상황에 맞게 전달되면 세부 정보나 부탁 표현이 조금 부족해도 "
+                        "다시 말하게 하지 말고 팁만 준 뒤 마무리하세요. "
+                        "5턴은 상한일 뿐 목표가 아닙니다. 학생이 적절히 한 번 답하면 "
+                        "새 상대 반응이나 추가 연습을 만들지 말고 구체적으로 칭찬하며 마무리하세요. "
+                        "Markdown 문법이나 서식용 별표·백틱·제목 기호를 출력하지 마세요. "
                         "아이에게 무조건 참으라고 하거나 훈계하지 마세요."
                     ),
                 },
                 {"role": "user", "content": prompt},
             ]
         )
+        return self._sanitize_reply(content)
 
     async def evaluate(
         self,
